@@ -36,7 +36,7 @@ func SendServerNotification(notification AlertNotification) error {
 		"【火烧云预警】城市: %s  事件: %s  时间: %s  AOD指标: %.2f 满足拍摄条件!",
 		notification.City, eventName, notification.EventTime, notification.AOD,
 	)
-	strings.ReplaceAll(message, "<br>", "")
+	message = strings.ReplaceAll(message, "<br>", "")
 
 	// 如果有图片链接，添加到消息中
 	//if notification.ImageURL != "" {
