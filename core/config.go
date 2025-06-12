@@ -1,0 +1,42 @@
+package core
+
+import (
+	"flame_clouds/config"
+	"flame_clouds/global"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
+	"os"
+)
+
+const ConfigFile = "settings.yaml"
+
+// ReadConfig 读取yaml配置
+func ReadConfig() *config.Config {
+	byteData, err := os.ReadFile(ConfigFile)
+	if err != nil {
+		logrus.Fatalf("配置文件错误 %s", err)
+	}
+	var server config.Config
+	err = yaml.Unmarshal(byteData, &server)
+	if err != nil {
+		logrus.Fatalf("配置文件格式错误 %s", err)
+	}
+	logrus.Infof("配置文件加载成功")
+	return &server
+}
+
+func DumpConfig() {
+	byteData, err := yaml.Marshal(global.Config)
+	if err != nil {
+		logrus.Errorf("转换错误 %s", err)
+		return
+	}
+
+	err = os.WriteFile(ConfigFile, byteData, 0666)
+	if err != nil {
+		logrus.Errorf("配置文件写入失败 %s", err)
+		return
+	}
+	logrus.Infof("配置文件写入成功")
+
+}
