@@ -20,7 +20,7 @@ func ReadConfig() *config.Config {
 	if err != nil {
 		logrus.Fatalf("配置文件格式错误 %s", err)
 	}
-	logrus.Infof("配置文件加载成功")
+	logrus.Infof("%s 配置文件加载成功", flags.Options.File)
 	return &server
 }
 
