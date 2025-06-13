@@ -1,14 +1,14 @@
 monitor: # 监控配置
-  city: 长沙 # 监控的城市
+  city: 南京 # 监控的城市
   evening: # 晚霞的监控配置，当前获取当天的晚霞
     enable: true # 是否启用
     checkAod: 0.5 # 校验指标，满足指标就进行推送
-    time: 0 0 15,16 * * * # 定时任务的时间配置
+    time: 0 1 13,16 * * * # 定时任务的时间配置
   morning: # 朝霞的监控配置，当天获取第二天的朝霞
     enable: false
     checkAod: 0.5
     time: 0 0 19,20 * * *
 bot:
-  enable: true
+  enable: false
   target: "ft" # 推送的目标：ft：方糖，也就是server酱
   sendKey: # server酱上面的sendKey

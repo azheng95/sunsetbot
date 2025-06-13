@@ -43,7 +43,7 @@ func SendServerNotification(notification AlertNotification) error {
 	//	message += fmt.Sprintf("  ![火烧云预测](%s)", notification.ImageURL)
 	//}
 
-	if !global.Config.ServerBot.Enable {
+	if !global.Config.Bot.Enable {
 		logrus.Infof("未配置消息推送渠道 %s", message)
 		return nil
 	}
@@ -57,7 +57,7 @@ func SendServerNotification(notification AlertNotification) error {
 		Title: eventName + "火烧云预警",
 		Desp:  message,
 	})
-	req, _ := http.NewRequest("POST", fmt.Sprintf("https://sctapi.ftqq.com/%s.send", global.Config.ServerBot.SendKey), bytes.NewReader(byteData))
+	req, _ := http.NewRequest("POST", fmt.Sprintf("https://sctapi.ftqq.com/%s.send", global.Config.Bot.SendKey), bytes.NewReader(byteData))
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
 
 	res, err := http.DefaultClient.Do(req)

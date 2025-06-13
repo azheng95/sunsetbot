@@ -2,6 +2,7 @@ package hsy_service
 
 import (
 	"encoding/json"
+	"flame_clouds/config"
 	"flame_clouds/global"
 	"flame_clouds/service/sct_service"
 	"fmt"
@@ -16,8 +17,9 @@ import (
 )
 
 type SunsetBotReq struct {
-	City  string `json:"city"`
-	Event string `json:"event"` // set_1:今天日落, rise_2:明天日出
+	City  string  `json:"city"`
+	Aod   float64 `json:"aod"`
+	Event string  `json:"event"` // set_1:今天日落, rise_2:明天日出
 }
 
 type SunsetBotResponse struct {
@@ -75,13 +77,13 @@ func GetSunsetData(req SunsetBotReq) (*SunsetBotResponse, error) {
 }
 
 // GetCitySunsetData 获取指定城市的天气数据
-func GetCitySunsetData(event string) {
-	t, err := GetSunsetData(SunsetBotReq{City: global.Config.Hsy.City, Event: event})
+func GetCitySunsetData(e config.MonitorEvent) {
+	t, err := GetSunsetData(SunsetBotReq{City: global.Config.Monitor.City, Event: e.EventType.Params(), Aod: e.CheckAod})
 	if err != nil {
 		logrus.Errorf("请求错误 %s", err)
 		return
 	}
-	checkAndNotify(t, event)
+	checkAndNotify(t, e)
 }
 
 // 解析火烧云指标
@@ -89,26 +91,25 @@ func parseAOD(aodStr string) (float64, error) {
 	// 去除HTML标签和额外内容
 	cleanStr := strings.Split(aodStr, "<")[0]
 	cleanStr = strings.TrimSpace(cleanStr)
-
 	return strconv.ParseFloat(cleanStr, 64)
 }
 
 // 检查并处理火烧云指标
-func checkAndNotify(data *SunsetBotResponse, eventType string) {
+func checkAndNotify(data *SunsetBotResponse, e config.MonitorEvent) {
 	aod, err := parseAOD(data.TbAod)
 	if err != nil {
 		fmt.Printf("解析AOD失败: %v\n", err)
 		return
 	}
 
-	logrus.Infof("城市: %s, 事件: %s, AOD: %.2f", "长沙", eventType, aod)
+	logrus.Infof("城市: %s, 事件: %s, AOD: %.2f", global.Config.Monitor.City, e.EventType.String(), aod)
 
 	// 阈值判断 (0.5是可配置的)
-	if aod >= global.Config.Hsy.CheckAod {
+	if aod >= e.CheckAod {
 		notification := sct_service.AlertNotification{
-			City:      "长沙",
+			City:      data.TbQuality,
 			AOD:       aod,
-			EventType: eventType,
+			EventType: e.EventType.String(),
 			EventTime: data.TbEventTime,
 			ImageURL:  data.ImgHref,
 		}
