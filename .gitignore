@@ -1,6 +1,6 @@
 .idea
 logs
 settings_dev.yaml
-main.exe
-main
+sunset_windows.exe
+sunset_linux
 sunset*.tar.gz

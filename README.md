@@ -27,6 +27,14 @@ https://www.fengfengzhidao.com/article/ZtYtBIsBg90FB71eC4QU
 
 使用 `go run main.go` 即可运行项目
 
+
+## 没有编程基础
+没事，在右侧我提供了release文件，找到对应版本
+
+有windows的可执行文件、linux的可执行文件、还有docker的镜像包
+
+直接运行即可
+
 ## 消息推送
 使用server酱推送到微信
 
