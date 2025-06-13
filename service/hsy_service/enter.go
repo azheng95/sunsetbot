@@ -28,9 +28,9 @@ type SunsetBotResponse struct {
 	PlaceHolder string `json:"place_holder"`
 	QueryId     string `json:"query_id"`
 	Status      string `json:"status"`
-	TbAod       string `json:"tb_aod"`        // 火烧云指标
+	TbAod       string `json:"tb_aod"`
 	TbEventTime string `json:"tb_event_time"` // 事件时间
-	TbQuality   string `json:"tb_quality"`
+	TbQuality   string `json:"tb_quality"`    // 火烧云指标
 }
 
 // 生成随机查询ID

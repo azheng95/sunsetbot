@@ -38,13 +38,19 @@ https://www.fengfengzhidao.com/article/ZtYtBIsBg90FB71eC4QU
 
 ## 配置文件
 ```yaml
-hsy:
-  checkAod: 0.5 # 校验指标
-  city: 长沙
-  wxDate: 0 0 16 * * * # 晚霞的通知时间
-  zxDate: 0 0 20 * * * # 朝霞的通知时间
-serverBot:
-  enable: true
+monitor: # 监控配置
+  city: 长沙 # 监控的城市
+  evening: # 晚霞的监控配置，当前获取当天的晚霞
+    enable: true # 是否启用
+    quality: 0.4 # 校验指标，满足指标就进行推送
+    time: 0 0 13,16 * * * # 定时任务的时间配置
+  morning: # 朝霞的监控配置，当天获取第二天的朝霞
+    enable: false
+    quality: 0.7
+    time: 0 0 19,20 * * *
+bot:
+  enable: false
+  target: "ft" # 推送的目标：ft：方糖，也就是server酱
   sendKey: # server酱上面的sendKey
 ```
 修改你所在的城市，修改晚霞和朝霞的推送时间
