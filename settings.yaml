@@ -1,9 +1,8 @@
 hsy:
   checkAod: 0.5 # 校验指标
   city: 长沙
-  wxDate: 0 44 15 * * * # 晚霞的通知时间
+  wxDate: 0 0 16 * * * # 晚霞的通知时间
   zxDate: 0 0 20 * * * # 朝霞的通知时间
 serverBot:
   enable: true
-  sendKey:
-  appKey:
+  sendKey: # server酱上面的sendKey
