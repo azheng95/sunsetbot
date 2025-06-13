@@ -51,11 +51,11 @@ monitor: # 监控配置
   evening: # 晚霞的监控配置，当前获取当天的晚霞
     enable: true # 是否启用
     quality: 0.4 # 校验指标，满足指标就进行推送
-    time: 0 0 13,16 * * * # 定时任务的时间配置
+    time: 0 0 15,17 * * * # 定时任务的时间配置，每天的下午3点，5点
   morning: # 朝霞的监控配置，当天获取第二天的朝霞
-    enable: false
+    enable: false  # 朝霞很多人都起不来，默认不获取
     quality: 0.7
-    time: 0 0 19,20 * * *
+    time: 0 0 20 * * 5,6 # 每周五、周六的晚上八点
 bot:
   enable: false
   target: "ft" # 推送的目标：ft：方糖，也就是server酱
