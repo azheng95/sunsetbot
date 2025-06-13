@@ -1,17 +1,28 @@
 package config
 
 type Config struct {
-	Hsy       Hsy       `yaml:"hsy"`
-	ServerBot ServerBot `yaml:"serverBot"`
+	Monitor Monitor `yaml:"monitor"`
+	Bot     Bot     `yaml:"bot"`
 }
 
-type Hsy struct {
-	CheckAod float64 `yaml:"checkAod"`
-	City     string  `yaml:"city"`
-	WxDate   string  `yaml:"wxDate"`
-	ZxDate   string  `yaml:"zxDate"`
+type Monitor struct {
+	City    string       `yaml:"city"`
+	Evening MonitorEvent `yaml:"evening"`
+	Morning MonitorEvent `yaml:"morning"`
 }
-type ServerBot struct {
-	Enable  bool   `yaml:"enable"`
-	SendKey string `yaml:"sendKey"`
+
+type MonitorEvent struct {
+	Enable   bool    `yaml:"enable"`
+	CheckAod float64 `yaml:"checkAod"`
+	Time     string  `yaml:"time"`
+}
+
+type BotTargetType string
+
+const FtBot BotTargetType = "ft"
+
+type Bot struct {
+	Enable  bool          `yaml:"enable"`
+	Target  BotTargetType `yaml:"target"`
+	SendKey string        `yaml:"sendKey"`
 }
