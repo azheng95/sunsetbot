@@ -6,6 +6,11 @@
 
 于是我写了个程序，定时去获取火烧云指数，配置简单
 
+如果火烧云满足你的阈值，直接将消息推送至你的微信
+
+![](https://image.fengfengzhidao.com/rj_10259001f2cfba6630b318de3b4d39ee065.png)
+
+
 程序使用go语言编写，项目运行很方便，支持docker部署
 
 ## 如何运行此项目
@@ -28,6 +33,8 @@ https://www.fengfengzhidao.com/article/ZtYtBIsBg90FB71eC4QU
 注册server酱账号： https://sct.ftqq.com/
 
 注册成功之后获取 sendKey，填入配置文件
+
+免费账号有五次推送机会，对我们来说足够了
 
 ## 配置文件
 ```yaml
