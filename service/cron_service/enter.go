@@ -15,12 +15,7 @@ var Crontab *cron.Cron
 func CronService() {
 	timezone, err := time.LoadLocation("Asia/Shanghai")
 	if err != nil {
-		logrus.Infof("parse location Asia/Shanghai error, %s", err)
-		timezone, err = time.LoadLocation("UTC+8")
-		if err != nil {
-			logrus.Infof("parse location UTC+8 error, %s", err)
-			return
-		}
+		logrus.Infof("时区配置错误, %s", err)
 	}
 
 	// 看看配置文件是否正确
@@ -61,7 +56,6 @@ func CronDate(e config.MonitorEvent) {
 	}
 
 	_, err := Crontab.AddFunc(e.Time, func() {
-		// 根据事件类型调用不同的服务
 		hsy_service.GetCitySunsetData(e)
 	})
 	if err != nil {

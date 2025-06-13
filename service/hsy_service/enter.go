@@ -98,28 +98,25 @@ func parseAOD(aodStr string) (float64, error) {
 func checkAndNotify(data *SunsetBotResponse, e config.MonitorEvent) {
 	aod, err := parseAOD(data.TbAod)
 	if err != nil {
-		fmt.Printf("解析AOD失败: %v\n", err)
+		logrus.Errorf("解析AOD失败: %s", err)
 		return
 	}
 
 	logrus.Infof("城市: %s, 事件: %s, AOD: %.2f", global.Config.Monitor.City, e.EventType.String(), aod)
 
-	// 阈值判断 (0.5是可配置的)
-	if aod >= e.CheckAod {
-		notification := sct_service.AlertNotification{
-			City:      data.TbQuality,
-			AOD:       aod,
-			EventType: e.EventType.String(),
-			EventTime: data.TbEventTime,
-			ImageURL:  data.ImgHref,
-		}
-
-		if err := sct_service.SendServerNotification(notification); err != nil {
-			logrus.Errorf("发送通知失败: %v", err)
-		} else {
-			logrus.Infof("火烧云预警通知已发送")
-		}
-	} else {
+	if aod < e.CheckAod {
 		logrus.Warnf("火烧云指标未达到阈值")
+		return
 	}
+
+	notification := sct_service.AlertNotification{
+		City:      data.TbQuality,
+		AOD:       aod,
+		EventType: e.EventType.String(),
+		EventTime: data.TbEventTime,
+		ImageURL:  data.ImgHref,
+	}
+	// 消息推送
+	sct_service.SendServerNotification(notification)
+
 }

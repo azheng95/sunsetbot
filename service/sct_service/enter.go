@@ -20,7 +20,7 @@ type AlertNotification struct {
 }
 
 // SendServerNotification 发送server通知
-func SendServerNotification(notification AlertNotification) error {
+func SendServerNotification(notification AlertNotification) {
 	// 构建消息内容
 	var eventName string
 	switch notification.EventType {
@@ -45,7 +45,7 @@ func SendServerNotification(notification AlertNotification) error {
 
 	if !global.Config.Bot.Enable {
 		logrus.Infof("未配置消息推送渠道 %s", message)
-		return nil
+		return
 	}
 	logrus.Infof(message)
 
@@ -63,7 +63,7 @@ func SendServerNotification(notification AlertNotification) error {
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logrus.Errorf("消息推送失败 %s", err)
-		return err
+		return
 	}
 	byteData, _ = io.ReadAll(res.Body)
 
@@ -82,10 +82,9 @@ func SendServerNotification(notification AlertNotification) error {
 	err = json.Unmarshal(byteData, &t)
 	if err != nil {
 		logrus.Errorf("%s json解析失败, %s", string(byteData), err)
-		return err
+		return
 	}
 
 	logrus.Infof("推送成功 pushID:%s", t.Data.Pushid)
-
-	return nil
+	return
 }
