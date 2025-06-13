@@ -20,12 +20,8 @@ type MonitorEvent struct {
 	Time      string          `yaml:"time"`
 }
 
-type BotTargetType string
-
-const FtBot BotTargetType = "ft"
-
 type Bot struct {
-	Enable  bool          `yaml:"enable"`
-	Target  BotTargetType `yaml:"target"`
-	SendKey string        `yaml:"sendKey"`
+	Enable  bool                `yaml:"enable"`
+	Target  types.BotTargetType `yaml:"target"`
+	SendKey string              `yaml:"sendKey"`
 }

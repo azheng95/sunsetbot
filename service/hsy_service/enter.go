@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"flame_clouds/config"
 	"flame_clouds/global"
-	"flame_clouds/service/sct_service"
+	"flame_clouds/service/message_push_service"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
@@ -109,14 +109,32 @@ func checkAndNotify(data *SunsetBotResponse, e config.MonitorEvent) {
 		return
 	}
 
-	notification := sct_service.AlertNotification{
-		Event:     e,
-		City:      global.Config.Monitor.City,
-		Quality:   quality,
-		EventTime: data.TbEventTime,
-		ImageURL:  data.ImgHref,
+	// 构建消息内容
+	message := fmt.Sprintf(
+		"【火烧云预警】城市: %s  事件: %s  时间: %s  火烧云质量: %.2f 满足拍摄条件!",
+		global.Config.Monitor.City,
+		e.EventType.String(),
+		data.TbEventTime,
+		quality,
+	)
+	message = strings.ReplaceAll(message, "<br>", "")
+	logrus.Infof(message)
+
+	if !global.Config.Bot.Enable {
+		logrus.Infof("未配置消息推送渠道")
+		return
 	}
+
+	title := e.EventType.String() + "火烧云预警"
+
 	// 消息推送
-	sct_service.SendServerNotification(notification)
+	bot := message_push_service.NewMessage(global.Config.Bot.Target)
+	if bot == nil {
+		return
+	}
+	err = bot.Push(title, message)
+	if err != nil {
+		logrus.Errorf("消息推送失败 %s", err)
+	}
 
 }
