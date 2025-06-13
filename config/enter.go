@@ -16,7 +16,7 @@ type Monitor struct {
 type MonitorEvent struct {
 	EventType types.EventType `yaml:"-"`
 	Enable    bool            `yaml:"enable"`
-	CheckAod  float64         `yaml:"checkAod"`
+	Quality   float64         `yaml:"quality"`
 	Time      string          `yaml:"time"`
 }
 

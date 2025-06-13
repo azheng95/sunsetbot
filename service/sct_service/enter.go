@@ -3,6 +3,7 @@ package sct_service
 import (
 	"bytes"
 	"encoding/json"
+	"flame_clouds/config"
 	"flame_clouds/global"
 	"fmt"
 	"github.com/sirupsen/logrus"
@@ -12,29 +13,19 @@ import (
 )
 
 type AlertNotification struct {
-	City      string  `json:"city"`
-	AOD       float64 `json:"aod"`
-	EventType string  `json:"event_type"`
-	EventTime string  `json:"event_time"`
-	ImageURL  string  `json:"image_url,omitempty"`
+	City      string              `json:"city"`
+	Quality   float64             `json:"quality"`
+	Event     config.MonitorEvent `json:"event"`
+	EventTime string              `json:"event_time"`
+	ImageURL  string              `json:"image_url,omitempty"`
 }
 
 // SendServerNotification 发送server通知
 func SendServerNotification(notification AlertNotification) {
 	// 构建消息内容
-	var eventName string
-	switch notification.EventType {
-	case "set_1":
-		eventName = "今日日落"
-	case "rise_2":
-		eventName = "明日日出"
-	default:
-		eventName = notification.EventType
-	}
-
 	message := fmt.Sprintf(
-		"【火烧云预警】城市: %s  事件: %s  时间: %s  AOD指标: %.2f 满足拍摄条件!",
-		notification.City, eventName, notification.EventTime, notification.AOD,
+		"【火烧云预警】城市: %s  事件: %s  时间: %s  火烧云质量: %.2f 满足拍摄条件!",
+		notification.City, notification.Event.EventType.String(), notification.EventTime, notification.Quality,
 	)
 	message = strings.ReplaceAll(message, "<br>", "")
 
@@ -54,7 +45,7 @@ func SendServerNotification(notification AlertNotification) {
 		Desp  string `json:"desp"`
 	}
 	byteData, _ := json.Marshal(FtReq{
-		Title: eventName + "火烧云预警",
+		Title: notification.Event.EventType.String() + "火烧云预警",
 		Desp:  message,
 	})
 	req, _ := http.NewRequest("POST", fmt.Sprintf("https://sctapi.ftqq.com/%s.send", global.Config.Bot.SendKey), bytes.NewReader(byteData))

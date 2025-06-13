@@ -78,7 +78,7 @@ func GetSunsetData(req SunsetBotReq) (*SunsetBotResponse, error) {
 
 // GetCitySunsetData 获取指定城市的天气数据
 func GetCitySunsetData(e config.MonitorEvent) {
-	t, err := GetSunsetData(SunsetBotReq{City: global.Config.Monitor.City, Event: e.EventType.Params(), Aod: e.CheckAod})
+	t, err := GetSunsetData(SunsetBotReq{City: global.Config.Monitor.City, Event: e.EventType.Params(), Aod: e.Quality})
 	if err != nil {
 		logrus.Errorf("请求错误 %s", err)
 		return
@@ -87,32 +87,32 @@ func GetCitySunsetData(e config.MonitorEvent) {
 }
 
 // 解析火烧云指标
-func parseAOD(aodStr string) (float64, error) {
+func parseQuality(qualityStr string) (float64, error) {
 	// 去除HTML标签和额外内容
-	cleanStr := strings.Split(aodStr, "<")[0]
+	cleanStr := strings.Split(qualityStr, "<")[0]
 	cleanStr = strings.TrimSpace(cleanStr)
 	return strconv.ParseFloat(cleanStr, 64)
 }
 
 // 检查并处理火烧云指标
 func checkAndNotify(data *SunsetBotResponse, e config.MonitorEvent) {
-	aod, err := parseAOD(data.TbAod)
+	quality, err := parseQuality(data.TbQuality)
 	if err != nil {
-		logrus.Errorf("解析AOD失败: %s", err)
+		logrus.Errorf("解析火烧云质量失败: %s", err)
 		return
 	}
 
-	logrus.Infof("城市: %s, 事件: %s, AOD: %.2f", global.Config.Monitor.City, e.EventType.String(), aod)
+	logrus.Infof("城市: %s, 事件: %s, 质量: %.2f", global.Config.Monitor.City, e.EventType.String(), quality)
 
-	if aod < e.CheckAod {
+	if quality < e.Quality {
 		logrus.Warnf("火烧云指标未达到阈值")
 		return
 	}
 
 	notification := sct_service.AlertNotification{
-		City:      data.TbQuality,
-		AOD:       aod,
-		EventType: e.EventType.String(),
+		Event:     e,
+		City:      global.Config.Monitor.City,
+		Quality:   quality,
 		EventTime: data.TbEventTime,
 		ImageURL:  data.ImgHref,
 	}

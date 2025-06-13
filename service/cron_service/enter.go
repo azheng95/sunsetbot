@@ -51,7 +51,7 @@ func CronDate(e config.MonitorEvent) {
 		return
 	}
 
-	if e.CheckAod == 0 {
+	if e.Quality == 0 {
 		logrus.Fatalf("未配置%s火烧云监控指标", eventString)
 	}
 
