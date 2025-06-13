@@ -125,7 +125,20 @@ func checkAndNotify(data *SunsetBotResponse, e config.MonitorEvent) {
 		return
 	}
 
-	title := e.EventType.String() + "火烧云预警"
+	// 去请求图片数据
+	if global.Config.Monitor.Map.Enable {
+		response, err1 := GetSunsetMapData(MapReq{
+			Region: global.Config.Monitor.Map.Region,
+			Event:  e.EventType.Params(),
+		})
+		if err1 == nil {
+			message += fmt.Sprintf("\n![](%s)", "https://sunsetbot.top"+response.MapImgSrc)
+		} else {
+			logrus.Errorf("请求火烧云地图数据失败 %s", err1)
+		}
+	}
+
+	title := fmt.Sprintf("[%s] %s预警 质量:%.2f", global.Config.Monitor.City, e.EventType.String(), quality)
 
 	// 消息推送
 	bot := message_push_service.NewMessage(global.Config.Bot.Target)
