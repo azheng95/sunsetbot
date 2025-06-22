@@ -1,0 +1,116 @@
+name: Go Build, Dockerize and Release
+
+on:
+  push:
+    tags:
+      - "v*"  # 仅 v 开头的 tag 触发
+
+env:
+  DOCKER_IMAGE_NAME: myapp  # Docker镜像名称
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        platform:
+          - { os: linux, goos: linux, goarch: amd64, suffix: "" }
+          - { os: linux, goos: linux, goarch: arm64, suffix: "-arm64" }
+          - { os: windows, goos: windows, goarch: amd64, suffix: ".exe" }
+          - { os: macos, goos: darwin, goarch: amd64, suffix: "-darwin" }
+          - { os: macos, goos: darwin, goarch: arm64, suffix: "-darwin-arm64" }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.platform.goos }}
+          GOARCH: ${{ matrix.platform.goarch }}
+          CGO_ENABLED: 0  # 静态编译
+        run: |
+          output_name="main-${{ matrix.platform.goos }}-${{ matrix.platform.goarch }}${{ matrix.platform.suffix }}"
+          go build -v -o $output_name .
+          echo "BINARY_NAME=$output_name" >> $GITHUB_ENV
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}
+          path: ${{ env.BINARY_NAME }}
+
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Linux Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: main-linux-amd64
+          path: docker-build/
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker Image
+        run: |
+          cp Dockerfile docker-build/
+          cd docker-build
+          docker build -t ${{ env.DOCKER_IMAGE_NAME }}:${{ github.ref_name }} .
+          docker save ${{ env.DOCKER_IMAGE_NAME }}:${{ github.ref_name }} > ${{ env.DOCKER_IMAGE_NAME }}.tar
+          gzip ${{ env.DOCKER_IMAGE_NAME }}.tar
+          echo "DOCKER_TAR=${{ env.DOCKER_IMAGE_NAME }}.tar.gz" >> $GITHUB_ENV
+
+      - name: Upload Docker Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: docker-build/${{ env.DOCKER_TAR }}
+
+  release:
+    needs: [build, docker]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Download Docker Image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: artifacts
+
+      - name: Verify Files
+        run: ls -R artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/main-darwin-amd64-darwin
+            artifacts/main-darwin-arm64-darwin-arm64
+            artifacts/main-linux-amd64
+            artifacts/main-linux-arm64-arm64
+            artifacts/main-windows-amd64.exe
+            artifacts/${{ env.DOCKER_IMAGE_NAME }}.tar.gz
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
