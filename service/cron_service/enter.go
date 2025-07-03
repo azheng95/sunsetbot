@@ -17,16 +17,6 @@ func CronService() {
 		logrus.Infof("时区配置错误, %s", err)
 	}
 
-	// 看看配置文件是否正确
-	if global.Config.Monitor.City == "" {
-		logrus.Fatalf("未配置火烧云监控城市")
-	}
-	if !global.Config.Bot.Enable {
-		logrus.Warnf("未配置消息通知渠道")
-	}
-
-	logrus.Infof("监控城市 %s", global.Config.Monitor.City)
-
 	Crontab = cron.New(cron.WithSeconds(), cron.WithLocation(timezone))
 
 	// 晚霞

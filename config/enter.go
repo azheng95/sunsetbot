@@ -8,10 +8,11 @@ type Config struct {
 }
 
 type Monitor struct {
-	City    string       `yaml:"city"`
-	Evening MonitorEvent `yaml:"evening"` // 晚霞
-	Morning MonitorEvent `yaml:"morning"` // 朝霞
-	Map     Map          `yaml:"map"`     // 地图
+	City     string       `yaml:"city"`
+	CityList []string     `yaml:"cityList"` // 多城市配置
+	Evening  MonitorEvent `yaml:"evening"`  // 晚霞
+	Morning  MonitorEvent `yaml:"morning"`  // 朝霞
+	Map      Map          `yaml:"map"`      // 地图
 }
 
 type Map struct {
@@ -27,7 +28,13 @@ type MonitorEvent struct {
 }
 
 type Bot struct {
-	Enable  bool                `yaml:"enable"`
-	Target  types.BotTargetType `yaml:"target"`
+	Enable     bool                `yaml:"enable"`
+	Target     types.BotTargetType `yaml:"target"`
+	SendKey    string              `yaml:"sendKey"`
+	TargetList []BotTarget         `yaml:"targetList"`
+}
+
+type BotTarget struct {
+	Name    types.BotTargetType `yaml:"name"`
 	SendKey string              `yaml:"sendKey"`
 }

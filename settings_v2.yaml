@@ -1,5 +1,4 @@
 monitor: # 监控配置
-  city:
   cityList: # 监控的城市，支持多个城市的监听
     - 长沙
     - 广州
@@ -17,8 +16,6 @@ monitor: # 监控配置
 
 bot:
   enable: false
-  target: ""
-  sendKey: "" # 之前发送单个的依然保留
   targetList: # 推送的目标，支持多个
     - name: ft # 推送的目标：ft：方糖，也就是server酱
       sendKey: "" # server酱上面的sendKey
