@@ -2,7 +2,6 @@ package message_push_service
 
 import (
 	"flame_clouds/config/types"
-	"flame_clouds/global"
 	"github.com/sirupsen/logrus"
 )
 
@@ -11,11 +10,11 @@ type MessagePushInterface interface {
 	Push(title string, des string) error
 }
 
-func NewMessage(t types.BotTargetType) MessagePushInterface {
+func NewMessage(t types.BotTargetType, key string) MessagePushInterface {
 	switch t {
 	case types.FtBot: // 方糖
 		return FtMsg{
-			Key: global.Config.Bot.SendKey,
+			Key: key,
 		}
 	default:
 		logrus.Errorf("消息推送配置错误")

@@ -24,7 +24,37 @@ func ReadConfig() *config.Config {
 	server.Monitor.Evening.EventType = types.Evening
 	server.Monitor.Morning.EventType = types.Morning
 	logrus.Infof("%s 配置文件加载成功", flags.Options.File)
+	ConfigValid(&server)
 	return &server
+}
+
+// ConfigValid 校验配置文件，因为要兼容老配置
+func ConfigValid(c *config.Config) {
+	logrus.Infof("验证配置文件")
+
+	// 如果配置了老的city，那新的cityList就不生效
+	if c.Monitor.City == "" {
+		if len(c.Monitor.CityList) == 0 {
+			logrus.Fatalf("未配置监控城市，程序退出")
+		}
+		logrus.Infof("监控城市 %v", c.Monitor.CityList)
+	} else {
+		if len(c.Monitor.CityList) != 0 {
+			logrus.Warnf("存在老的city配置，新的cityList无效")
+		}
+		logrus.Infof("监控城市 %v", c.Monitor.City)
+	}
+
+	// 如果配置了老的消息推送，新的消息推送同样不生效
+	if !c.Bot.Enable {
+		logrus.Warnf("未配置消息通知渠道")
+		return
+	}
+	if c.Bot.Target != "" {
+		if len(c.Bot.TargetList) != 0 {
+			logrus.Warnf("存在老的消息推送，新的消息推送无效")
+		}
+	}
 }
 
 func DumpConfig() {

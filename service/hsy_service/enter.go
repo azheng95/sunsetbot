@@ -31,6 +31,8 @@ type SunsetBotResponse struct {
 	TbAod       string `json:"tb_aod"`
 	TbEventTime string `json:"tb_event_time"` // 事件时间
 	TbQuality   string `json:"tb_quality"`    // 火烧云指标
+
+	City string `json:"city"` // 用于参数传递
 }
 
 // 生成随机查询ID
@@ -73,17 +75,30 @@ func GetSunsetData(req SunsetBotReq) (*SunsetBotResponse, error) {
 	if err := json.Unmarshal(body, &data); err != nil {
 		return nil, fmt.Errorf("JSON解析失败: %w", err)
 	}
+	data.City = req.City
 	return &data, nil
 }
 
 // GetCitySunsetData 获取指定城市的天气数据
 func GetCitySunsetData(e config.MonitorEvent) {
-	t, err := GetSunsetData(SunsetBotReq{City: global.Config.Monitor.City, Event: e.EventType.Params(), Aod: e.Quality})
-	if err != nil {
-		logrus.Errorf("请求错误 %s", err)
+	if global.Config.Monitor.City != "" {
+		t, err := GetSunsetData(SunsetBotReq{City: global.Config.Monitor.City, Event: e.EventType.Params(), Aod: e.Quality})
+		if err != nil {
+			logrus.Errorf("请求错误 %s", err)
+			return
+		}
+		checkAndNotify(t, e)
 		return
 	}
-	checkAndNotify(t, e)
+
+	for _, city := range global.Config.Monitor.CityList {
+		t, err := GetSunsetData(SunsetBotReq{City: city, Event: e.EventType.Params(), Aod: e.Quality})
+		if err != nil {
+			logrus.Errorf("请求错误 %s", err)
+			return
+		}
+		checkAndNotify(t, e)
+	}
 }
 
 // 解析火烧云指标
@@ -102,7 +117,7 @@ func checkAndNotify(data *SunsetBotResponse, e config.MonitorEvent) {
 		return
 	}
 
-	logrus.Infof("城市: %s, 事件: %s, 质量: %.2f", global.Config.Monitor.City, e.EventType.String(), quality)
+	logrus.Infof("城市: %s, 事件: %s, 质量: %.2f", data.City, e.EventType.String(), quality)
 
 	if quality < e.Quality {
 		logrus.Warnf("火烧云指标未达到阈值")
@@ -112,7 +127,7 @@ func checkAndNotify(data *SunsetBotResponse, e config.MonitorEvent) {
 	// 构建消息内容
 	message := fmt.Sprintf(
 		"【火烧云预警】城市: %s  事件: %s  时间: %s  火烧云质量: %.2f 满足拍摄条件!",
-		global.Config.Monitor.City,
+		data.City,
 		e.EventType.String(),
 		data.TbEventTime,
 		quality,
@@ -138,16 +153,29 @@ func checkAndNotify(data *SunsetBotResponse, e config.MonitorEvent) {
 		}
 	}
 
-	title := fmt.Sprintf("[%s] %s预警 质量:%.2f", global.Config.Monitor.City, e.EventType.String(), quality)
+	title := fmt.Sprintf("[%s] %s预警 质量:%.2f", data.City, e.EventType.String(), quality)
 
-	// 消息推送
-	bot := message_push_service.NewMessage(global.Config.Bot.Target)
-	if bot == nil {
+	if global.Config.Bot.Target != "" {
+		// 消息推送
+		bot := message_push_service.NewMessage(global.Config.Bot.Target, global.Config.Bot.SendKey)
+		if bot == nil {
+			return
+		}
+		err = bot.Push(title, message)
+		if err != nil {
+			logrus.Errorf("消息推送失败 %s", err)
+		}
 		return
 	}
-	err = bot.Push(title, message)
-	if err != nil {
-		logrus.Errorf("消息推送失败 %s", err)
+	for _, target := range global.Config.Bot.TargetList {
+		// 消息推送
+		bot := message_push_service.NewMessage(target.Name, target.SendKey)
+		if bot == nil {
+			return
+		}
+		err = bot.Push(title, message)
+		if err != nil {
+			logrus.Errorf("消息推送失败 %s", err)
+		}
 	}
-
 }
