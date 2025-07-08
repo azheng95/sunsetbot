@@ -67,3 +67,9 @@ bot:
 ## 如何部署
 如果你有自己的云服务器
 那么你可以直接构建docker镜像，然后使用docker运行容器
+
+### 使用docker运行
+需要修改一下你的配置文件，然后使用目录映射的方式
+```bash
+docker run -itd --name sunset -v /opt/sunset/settings.yaml:/app/settings.yaml sunset:v1.0.11
+```
