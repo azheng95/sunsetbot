@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"regexp"
 )
 
 type SunsetBotReq struct {
@@ -103,10 +104,12 @@ func GetCitySunsetData(e config.MonitorEvent) {
 
 // 解析火烧云指标
 func parseQuality(qualityStr string) (float64, error) {
-	// 去除HTML标签和额外内容
-	cleanStr := strings.Split(qualityStr, "<")[0]
-	cleanStr = strings.TrimSpace(cleanStr)
-	return strconv.ParseFloat(cleanStr, 64)
+	// 使用正则表达式提取数字部分
+	re := regexp.MustCompile(`(\d+\.?\d*)`)
+	match := re.FindStringSubmatch(qualityStr)
+	if len(match) > 0 {
+		return strconv.ParseFloat(match[0], 64)
+	}
 }
 
 // 检查并处理火烧云指标
