@@ -11,10 +11,10 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
-	"regexp"
 )
 
 type SunsetBotReq struct {
@@ -102,14 +102,16 @@ func GetCitySunsetData(e config.MonitorEvent) {
 	}
 }
 
+var qualityRe = regexp.MustCompile(`(\d+\.?\d*)`)
+
 // 解析火烧云指标
 func parseQuality(qualityStr string) (float64, error) {
 	// 使用正则表达式提取数字部分
-	re := regexp.MustCompile(`(\d+\.?\d*)`)
-	match := re.FindStringSubmatch(qualityStr)
+	match := qualityRe.FindStringSubmatch(qualityStr)
 	if len(match) > 0 {
 		return strconv.ParseFloat(match[0], 64)
 	}
+	return 0, fmt.Errorf("解析失败 %s", qualityStr)
 }
 
 // 检查并处理火烧云指标
